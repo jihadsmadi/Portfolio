@@ -1,0 +1,57 @@
+SignalR is a solved problem. You install the package, wire up a hub, and `connection.on("update", ...)` just works. The hard part isn't the transport layer — it's keeping state consistent across 50 concurrent users who are all editing the same board at the same time.
+
+This is the story of building a real-time collaborative board engine that actually tells the truth.
+
+## The lie that's easy to tell
+
+The naive implementation goes like this: user drags a card, client sends the new position to the server, server broadcasts it to everyone else. Done.
+
+Except it isn't. Two users drag the same card at the same time. Both sends arrive within 50ms of each other. The last write wins — but which write is "last" depends on which thread the hub processed first. Both clients think their version is current. The server thinks one thing. The database thinks another. Everyone is wrong.
+
+This is the classic problem of distributed state without a consensus mechanism.
+
+## What I built instead
+
+The solution has three parts:
+
+**1. Version numbers on every entity**
+
+Every card, column, and board has a `version` integer. When a client sends an update, it includes the version it was working from.
+
+```csharp
+public record MoveCardCommand(
+    Guid CardId,
+    Guid TargetColumnId,
+    int Position,
+    int ExpectedVersion
+);
+```
+
+On the server, before applying any change:
+
+```csharp
+if (card.Version != command.ExpectedVersion)
+    throw new ConflictException(card.Version);
+```
+
+The client gets back the current version and can decide what to do — in most cases, it re-fetches and re-renders.
+
+**2. Optimistic UI with rollback**
+
+The client applies changes immediately (optimistic update) and sends the command. If it gets a conflict response back, it rolls back the local state to the server's version. Users see a brief flicker on conflict, not a broken board.
+
+**3. Redis backplane for horizontal scale**
+
+A single SignalR server is fine in development. In production with multiple instances behind a load balancer, hub connections on server A can't reach clients connected to server B. The fix is a Redis backplane: all servers publish and subscribe through Redis, which fans out messages to all connected clients regardless of which server they're on.
+
+```csharp
+builder.Services.AddSignalR().AddStackExchangeRedis(connectionString);
+```
+
+One line. But you need Redis.
+
+## What I learned
+
+The engine doesn't try to be clever about conflict resolution. It doesn't do operational transforms or CRDTs. It just refuses to accept stale writes and tells the client to try again with fresh data. For a task board, that's the right tradeoff — conflicts are rare, and a brief re-render on conflict is invisible to users.
+
+The real lesson: **consistency is a product decision, not just a technical one**. Decide what "consistent" means for your use case before you write a line of sync code.

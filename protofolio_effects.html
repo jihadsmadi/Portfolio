@@ -1,0 +1,282 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.showcase{padding:1rem 0;font-family:var(--font-sans)}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem;margin-top:1.5rem}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
+.tab{padding:5px 13px;font-size:12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s;font-family:var(--font-sans);white-space:nowrap}
+.tab.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:transparent}
+.tab.new-tag{border-color:rgba(129,140,248,.4);color:rgba(129,140,248,1)}
+.tab.new-tag.active{background:rgba(99,102,241,1);color:#fff}
+.demo-area{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-secondary);min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;position:relative;overflow:hidden}
+.desc{font-size:12px;color:var(--color-text-tertiary);margin-top:.75rem;text-align:center}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--color-background-info);color:var(--color-text-info);display:inline-block;margin-bottom:.75rem}
+.nbadge{font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(238,237,254,1);color:rgba(83,74,183,1);display:inline-block;margin-bottom:.75rem}
+
+/* ---- original 11 ---- */
+.mag-btn{padding:12px 28px;border-radius:12px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:15px;cursor:pointer;transition:transform .15s cubic-bezier(.23,1,.32,1);font-family:var(--font-sans);display:inline-block;user-select:none}
+.aurora-card{width:200px;padding:1.25rem;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);position:relative;overflow:hidden;cursor:pointer;transition:border-color .3s}
+.aurora-card::before{content:'';position:absolute;inset:-40px;background:radial-gradient(circle at 60% 40%,rgba(129,90,255,.22) 0%,rgba(56,189,248,.13) 40%,transparent 70%);opacity:0;transition:opacity .4s;filter:blur(18px);pointer-events:none}
+.aurora-card:hover::before{opacity:1}
+.aurora-card:hover{border-color:rgba(129,90,255,.35)}
+.reveal-item{padding:11px 16px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary);opacity:0;transform:translateY(18px) scale(.97);filter:blur(6px);transition:opacity .5s,transform .5s cubic-bezier(.23,1,.32,1),filter .5s;width:240px}
+.reveal-item.visible{opacity:1;transform:none;filter:none}
+.nav-demo{display:flex;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:4px;position:relative}
+.nav-pill{position:absolute;top:4px;background:var(--color-text-primary);border-radius:9px;height:calc(100% - 8px);transition:left .3s cubic-bezier(.23,1,.32,1),width .3s cubic-bezier(.23,1,.32,1);pointer-events:none}
+.nav-item{padding:7px 16px;font-size:13px;cursor:pointer;border-radius:9px;position:relative;z-index:1;color:var(--color-text-secondary);user-select:none;transition:color .2s;white-space:nowrap}
+.nav-item.active{color:var(--color-background-primary)}
+.tilt-card{width:190px;height:120px;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:14px;cursor:pointer;position:relative;overflow:hidden;transform-style:preserve-3d}
+.tilt-card .shine{position:absolute;inset:0;border-radius:var(--border-radius-lg);opacity:0;transition:opacity .3s;pointer-events:none}
+.status-chip{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);font-size:13px;color:var(--color-text-primary);animation:float 3s ease-in-out infinite}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;position:relative;flex-shrink:0}
+.pulse-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:rgba(34,197,94,.3);animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.2);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.rail{width:2px;background:var(--color-border-tertiary);border-radius:2px;position:relative;height:150px;flex-shrink:0}
+.rail-fill{width:2px;border-radius:2px;background:rgba(129,140,248,1);transition:height .5s cubic-bezier(.23,1,.32,1);position:absolute;top:0}
+.rail-node{width:10px;height:10px;border-radius:50%;border:2px solid var(--color-background-secondary);background:var(--color-border-tertiary);transition:background .4s;margin-left:-4px}
+.rail-node.active{background:rgba(129,140,248,1)}
+.rail-section{font-size:12px;height:37px;display:flex;align-items:center;color:var(--color-text-secondary);cursor:pointer;transition:color .2s;padding:0 4px}
+.rail-section.active{color:var(--color-text-primary);font-weight:500}
+.spotlight-area{width:100%;height:150px;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.spotlight-grad{position:absolute;width:280px;height:280px;border-radius:50%;pointer-events:none;opacity:0;transform:translate(-50%,-50%)}
+.spotlight-area:hover .spotlight-grad{opacity:1}
+.scramble-text{font-size:17px;font-weight:500;color:var(--color-text-primary);cursor:pointer;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);transition:color .2s;font-family:var(--font-mono,monospace);width:260px}
+.scramble-text:hover{color:rgba(129,140,248,1)}
+
+/* ---- new 10 ---- */
+/* dock */
+.dock{display:flex;align-items:flex-end;gap:8px;padding:12px 16px;border-radius:16px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary)}
+.dock-icon{width:44px;height:44px;border-radius:12px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s cubic-bezier(.23,1,.32,1),width .2s,height .2s;font-size:20px;color:var(--color-text-secondary);flex-shrink:0}
+.dock-icon:hover{transform:translateY(-10px) scale(1.25)}
+.dock-icon.neighbor{transform:translateY(-5px) scale(1.1)}
+
+/* counter */
+.counter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+.counter-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;text-align:center}
+.counter-num{font-size:28px;font-weight:500;color:var(--color-text-primary);font-variant-numeric:tabular-nums}
+.counter-lbl{font-size:11px;color:var(--color-text-tertiary);margin-top:4px}
+
+/* command palette */
+.cmd-overlay{width:100%;max-width:340px;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);overflow:hidden}
+.cmd-input{width:100%;padding:12px 14px;font-size:14px;border:none;border-bottom:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-primary);font-family:var(--font-sans);outline:none}
+.cmd-item{display:flex;align-items:center;gap:10px;padding:9px 14px;font-size:13px;cursor:pointer;color:var(--color-text-primary);transition:background .1s}
+.cmd-item:hover,.cmd-item.sel{background:var(--color-background-secondary)}
+.cmd-item i{font-size:16px;color:var(--color-text-secondary);width:18px;text-align:center}
+.cmd-kbd{margin-left:auto;font-size:11px;padding:2px 6px;border-radius:4px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);color:var(--color-text-tertiary);font-family:var(--font-mono,monospace)}
+
+/* gradient border */
+.gb-card{width:200px;padding:1.25rem;border-radius:14px;position:relative;background:var(--color-background-primary);cursor:pointer}
+.gb-card::before{content:'';position:absolute;inset:-1.5px;border-radius:15px;background:conic-gradient(from var(--angle,0deg),#818cf8,#7dd3fc,#c4b5fd,#818cf8);animation:spin 4s linear infinite;z-index:-1}
+@property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes spin{to{--angle:360deg}}
+
+/* word reveal */
+.word-reveal-wrap{display:flex;flex-wrap:wrap;gap:6px;max-width:280px;justify-content:center}
+.wr-word{font-size:22px;font-weight:500;color:var(--color-text-primary);opacity:0;transform:translateY(14px);transition:opacity .4s,transform .4s cubic-bezier(.23,1,.32,1);display:inline-block}
+.wr-word.show{opacity:1;transform:none}
+
+/* cursor trail */
+.trail-area{width:100%;height:150px;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:crosshair}
+.trail-dot{position:absolute;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
+
+/* typewriter */
+.typewriter-wrap{text-align:center}
+.tw-static{font-size:18px;color:var(--color-text-secondary)}
+.tw-dynamic{font-size:18px;font-weight:500;color:var(--color-text-primary);border-right:2px solid rgba(129,140,248,1);padding-right:2px;display:inline-block;animation:blink .7s step-end infinite}
+@keyframes blink{0%,100%{border-color:rgba(129,140,248,1)}50%{border-color:transparent}}
+
+/* stagger grid */
+.sg-grid{display:grid;grid-template-columns:repeat(3,80px);gap:10px}
+.sg-cell{height:70px;border-radius:var(--border-radius-md);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-text-secondary);opacity:0;transform:scale(.88);transition:opacity .35s,transform .35s cubic-bezier(.23,1,.32,1)}
+.sg-cell.in{opacity:1;transform:scale(1)}
+
+/* hover underline draw */
+.link-draw{font-size:20px;font-weight:500;color:var(--color-text-primary);text-decoration:none;position:relative;cursor:pointer;display:inline-block;padding-bottom:3px}
+.link-draw::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:rgba(129,140,248,1);border-radius:2px;transition:width .35s cubic-bezier(.23,1,.32,1)}
+.link-draw:hover::after{width:100%}
+.link-draw.active-ul::after{width:100%}
+
+/* glassmorphism card */
+.glass-wrap{width:100%;height:180px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:var(--border-radius-lg);background:linear-gradient(135deg,rgba(129,140,248,.15) 0%,rgba(125,211,252,.1) 100%);border:0.5px solid var(--color-border-tertiary)}
+.glass-card{padding:1.25rem 1.5rem;border-radius:14px;background:rgba(255,255,255,0.12);border:0.5px solid rgba(255,255,255,0.25);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);min-width:200px}
+.glass-card h3{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.glass-card p{font-size:12px;color:var(--color-text-secondary)}
+</style>
+
+<div class="showcase">
+  <h2 class="sr-only">Portfolio animation showcase — 21 interactive demos across original and new effects</h2>
+
+  <div class="section-label">Original 11</div>
+  <div class="tabs" id="tabs-a"></div>
+
+  <div class="section-label" style="margin-top:1rem">10 new modern effects</div>
+  <div class="tabs" id="tabs-b"></div>
+
+  <div class="demo-area" id="demo" style="margin-top:1rem"></div>
+  <p class="desc" id="desc"></p>
+</div>
+
+<script>
+const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567!@#$%';
+
+const original=[
+  {name:'Magnetic btn',desc:'Hover slowly — button follows cursor via translateX/Y + scale(1.03)',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">CTA · social icons</div><button class="mag-btn" id="mb">Get in touch →</button>`;
+    const b=document.getElementById('mb');
+    b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.22}px,${(e.clientY-r.top-r.height/2)*.22}px) scale(1.03)`;});
+    b.addEventListener('mouseleave',()=>{b.style.transform='';});
+  }},
+  {name:'Aurora hover',desc:'Hover the card — radial glow blooms via blurred pseudo-element',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">project cards · hero</div><div class="aurora-card"><p style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Project Alpha</p><p style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Next.js · Tailwind · Prisma</p></div>`;
+  }},
+  {name:'Scroll reveal',desc:'Elements enter with blur-reduction + scale + fade, staggered',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">any content section</div><div style="display:flex;flex-direction:column;gap:9px" id="ri"><div class="reveal-item">About me</div><div class="reveal-item">Projects</div><div class="reveal-item">Skills</div><div class="reveal-item">Contact</div></div><button onclick="doReveal()" style="margin-top:12px;font-size:12px;padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans)">↺ Replay</button>`;
+    setTimeout(doReveal,120);
+  }},
+  {name:'Liquid nav',desc:'Click items — pill morphs via transform + width interpolation',render(){
+    const its=['Home','Work','About','Contact'];
+    document.getElementById('demo').innerHTML=`<div class="badge">navbar · iOS segmented control</div><div class="nav-demo" id="nd"><div class="nav-pill" id="np"></div>${its.map((t,i)=>`<div class="nav-item${i===0?' active':''}" data-x="${i}">${t}</div>`).join('')}</div>`;
+    setTimeout(()=>{
+      const nd=document.getElementById('nd'),pill=document.getElementById('np');
+      const ni=nd.querySelectorAll('.nav-item');
+      function mv(el){ni.forEach(n=>n.classList.remove('active'));el.classList.add('active');pill.style.left=el.offsetLeft+'px';pill.style.width=el.offsetWidth+'px';}
+      mv(ni[0]);
+      ni.forEach(el=>el.addEventListener('click',()=>mv(el)));
+    },50);
+  }},
+  {name:'Grid bg',desc:'Drifting dot grid with animated radial light — opacity kept very low',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">hero section</div><div style="width:100%;height:150px;border-radius:var(--border-radius-lg);background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center"><canvas id="gc" width="400" height="150"></canvas><div style="position:relative;z-index:1;font-size:19px;font-weight:500;color:var(--color-text-primary)">Hi, I'm a developer ✦</div></div>`;
+    const cv=document.getElementById('gc');cv.width=cv.parentElement.offsetWidth||400;
+    const cx=cv.getContext('2d');let t=0;
+    (function draw(){cx.clearRect(0,0,cv.width,150);for(let x=0;x<cv.width;x+=28){for(let y=0;y<150;y+=28){const ox=Math.sin((x+t*.4)/60)*3,oy=Math.cos((y+t*.3)/60)*3;cx.beginPath();cx.arc(x+ox,y+oy,1.2,0,Math.PI*2);cx.fillStyle='rgba(129,140,248,0.3)';cx.fill();}}const g=cx.createRadialGradient(cv.width/2+Math.sin(t/80)*40,75+Math.cos(t/60)*15,0,cv.width/2,75,140);g.addColorStop(0,'rgba(129,140,248,0.1)');g.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=g;cx.fillRect(0,0,cv.width,150);t++;requestAnimationFrame(draw);})();
+  }},
+  {name:'3D tilt card',desc:'Move cursor over card — rotateX/Y max ±8deg + moving shine layer',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">project cards · Apple-style</div><div class="tilt-card" id="tc"><div class="shine" id="ts"></div><span style="font-size:11px;color:var(--color-text-secondary)">React · Next.js</span><p style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-top:4px">E-commerce Dashboard</p></div>`;
+    const card=document.getElementById('tc'),shine=document.getElementById('ts');
+    card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;card.style.transform=`rotateY(${x*8}deg) rotateX(${-y*8}deg) scale(1.03)`;shine.style.background=`radial-gradient(circle at ${(x+.5)*100}% ${(y+.5)*100}%,rgba(255,255,255,.22) 0%,transparent 60%)`;shine.style.opacity='1';});
+    card.addEventListener('mouseleave',()=>{card.style.transform='';shine.style.opacity='0';});
+  }},
+  {name:'Theme toggle',desc:'Click — moon/sun SVG morphs with rotation + scale transition',render(){
+    let dk=false;
+    document.getElementById('demo').innerHTML=`<div class="badge">signature interaction</div><div style="display:flex;align-items:center;gap:16px"><div style="width:56px;height:30px;border-radius:15px;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);cursor:pointer;position:relative;display:flex;align-items:center;" id="tt"><svg id="mi" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="position:absolute;left:8px;color:var(--color-text-secondary);transition:transform .4s,opacity .3s"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><svg id="si" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="position:absolute;left:8px;color:var(--color-text-secondary);opacity:0;transition:transform .4s,opacity .3s"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></div><span style="font-size:13px;color:var(--color-text-secondary)" id="tl">Light mode</span></div>`;
+    const tt=document.getElementById('tt'),mi=document.getElementById('mi'),si=document.getElementById('si'),tl=document.getElementById('tl');
+    tt.addEventListener('click',()=>{dk=!dk;if(dk){mi.style.opacity='0';mi.style.transform='rotate(180deg) scale(0)';si.style.opacity='1';si.style.transform='translateX(24px)';tl.textContent='Dark mode';}else{si.style.opacity='0';si.style.transform='translateX(24px) rotate(90deg) scale(0)';mi.style.opacity='1';mi.style.transform='';tl.textContent='Light mode';}});
+  }},
+  {name:'Status chip',desc:'Floating "Available for work" chip with pulsing dot + vertical float',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">hero near avatar</div><div class="status-chip"><div class="pulse-dot"></div>Available for work</div>`;
+  }},
+  {name:'Progress rail',desc:'Click sections — glowing vertical rail tracks reading progress',render(){
+    const secs=['Hero','Work','Skills','About','Contact'];
+    document.getElementById('demo').innerHTML=`<div class="badge">editorial layouts</div><div style="display:flex;gap:20px;align-items:flex-start"><div class="rail"><div class="rail-fill" id="rf" style="height:0%"></div><div style="position:absolute;top:0;left:50%;transform:translateX(-50%);height:100%;display:flex;flex-direction:column;justify-content:space-between">${secs.map((_,i)=>`<div class="rail-node${i===0?' active':''}" style="margin-left:-4px"></div>`).join('')}</div></div><div style="display:flex;flex-direction:column">${secs.map((s,i)=>`<div class="rail-section${i===0?' active':''}" data-i="${i}">${s}</div>`).join('')}</div></div>`;
+    document.querySelectorAll('.rail-section').forEach(s=>s.addEventListener('click',()=>{const idx=+s.dataset.i;document.querySelectorAll('.rail-node').forEach((n,i)=>n.classList.toggle('active',i<=idx));document.querySelectorAll('.rail-section').forEach((sec,i)=>sec.classList.toggle('active',i===idx));document.getElementById('rf').style.height=(idx/4*100)+'%';}));
+  }},
+  {name:'Spotlight',desc:'Move cursor over the area — soft radial light follows at low opacity',render(){
+    document.getElementById('demo').innerHTML=`<div class="badge">hero · cards · testimonials</div><div class="spotlight-area" id="spa"><div class="spotlight-grad" id="spg" style="background:radial-gradient(circle,rgba(129,140,248,.18) 0%,transparent 70%)"></div><span style="position:relative;z-index:1;font-size:17px;font-weight:500;color:var(--color-text-secondary)">Move cursor here</span></div>`;
+    const a=document.getElementById('spa'),g=document.getElementById('spg');
+    a.addEventListener('mousemove',e=>{const r=a.getBoundingClientRect();g.style.left=(e.clientX-r.left)+'px';g.style.top=(e.clientY-r.top)+'px';});
+  }},
+  {name:'Scramble text',desc:'Hover any title — characters scramble before resolving',render(){
+    const ts=['Frontend Developer','Open to work','Side projects →'];
+    document.getElementById('demo').innerHTML=`<div class="badge">nav · hero · project names</div><div style="display:flex;flex-direction:column;gap:10px">${ts.map(t=>`<div class="scramble-text" data-t="${t}">${t}</div>`).join('')}</div>`;
+    document.querySelectorAll('.scramble-text').forEach(el=>{
+      let f,it=0;
+      el.addEventListener('mouseenter',()=>{it=0;const o=el.dataset.t;clearInterval(f);f=setInterval(()=>{el.textContent=o.split('').map((c,i)=>{if(i<it)return c;if(c===' ')return ' ';return chars[Math.floor(Math.random()*chars.length)];}).join('');it+=.6;if(it>=o.length){clearInterval(f);el.textContent=o;}},30);});
+    });
+  }}
+];
+
+const newEffects=[
+  {name:'Dock magnify',desc:'Hover icons — macOS-style scale magnification ripples to neighbors',render(){
+    const icons=['ti-brand-github','ti-brand-twitter','ti-mail','ti-file-cv','ti-brand-linkedin'];
+    document.getElementById('demo').innerHTML=`<div class="nbadge">macOS dock · social bar</div><div class="dock" id="dock">${icons.map(ic=>`<div class="dock-icon"><i class="ti ${ic}" aria-hidden="true"></i></div>`).join('')}</div>`;
+    const dockEl=document.getElementById('dock'),dicons=dockEl.querySelectorAll('.dock-icon');
+    dicons.forEach((icon,i)=>{
+      icon.addEventListener('mouseenter',()=>{dicons.forEach((d,j)=>{const dist=Math.abs(j-i);if(dist===0)d.style.transform='translateY(-12px) scale(1.35)';else if(dist===1)d.style.transform='translateY(-6px) scale(1.15)';else d.style.transform='';});});
+      icon.addEventListener('mouseleave',()=>{dicons.forEach(d=>d.style.transform='');});
+    });
+  }},
+  {name:'Number counter',desc:'Click "Animate" — stats count up with easing from zero',render(){
+    document.getElementById('demo').innerHTML=`<div class="nbadge">stats · years · projects · clients</div><div class="counter-grid"><div class="counter-card"><div class="counter-num" id="c1">0</div><div class="counter-lbl">Years exp</div></div><div class="counter-card"><div class="counter-num" id="c2">0</div><div class="counter-lbl">Projects</div></div><div class="counter-card"><div class="counter-num" id="c3">0</div><div class="counter-lbl">Clients</div></div></div><button onclick="doCount()" style="margin-top:12px;font-size:12px;padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans)">↺ Animate</button>`;
+    setTimeout(doCount,200);
+  }},
+  {name:'Command palette',desc:'Type to filter — press ↑↓ to navigate, Enter to select',render(){
+    const cmds=[{i:'ti-home',l:'Go home',k:'G H'},{i:'ti-briefcase',l:'View work',k:'G W'},{i:'ti-user',l:'About me',k:'G A'},{i:'ti-mail',l:'Contact',k:'G C'},{i:'ti-moon',l:'Toggle theme',k:'⌘ D'},{i:'ti-brand-github',l:'GitHub profile',k:''},{i:'ti-download',l:'Download CV',k:''}];
+    document.getElementById('demo').innerHTML=`<div class="nbadge">⌘K palette · / shortcut</div><div class="cmd-overlay"><input class="cmd-input" id="ci" placeholder="Search commands…" autocomplete="off"/><div id="clist">${cmds.map((c,i)=>`<div class="cmd-item${i===0?' sel':''}" data-i="${i}"><i class="ti ${c.i}" aria-hidden="true"></i>${c.l}${c.k?`<span class="cmd-kbd">${c.k}</span>`:''}</div>`).join('')}</div></div>`;
+    const inp=document.getElementById('ci'),list=document.getElementById('clist');
+    inp.addEventListener('input',()=>{const q=inp.value.toLowerCase();list.querySelectorAll('.cmd-item').forEach(el=>{el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';});});
+    inp.focus();
+  }},
+  {name:'Gradient border',desc:'Animated conic-gradient border rotates continuously on featured cards',render(){
+    document.getElementById('demo').innerHTML=`<div class="nbadge">featured cards · hero CTA</div><div class="gb-card"><p style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px">Featured Project</p><p style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">Indigo · cyan · lavender — never rainbow</p></div>`;
+  }},
+  {name:'Word reveal',desc:'Click Replay — each word drops in independently with spring easing',render(){
+    const ws='Building things that matter.'.split(' ');
+    document.getElementById('demo').innerHTML=`<div class="nbadge">hero headline · section titles</div><div class="word-reveal-wrap" id="wr">${ws.map(w=>`<span class="wr-word">${w}</span>`).join('')}</div><button onclick="doWords()" style="margin-top:14px;font-size:12px;padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans)">↺ Replay</button>`;
+    setTimeout(doWords,150);
+  }},
+  {name:'Cursor trail',desc:'Move cursor over the area — colored dots trail your movement',render(){
+    document.getElementById('demo').innerHTML=`<div class="nbadge">hero · immersive sections</div><div class="trail-area" id="ta"><span style="position:relative;z-index:1;font-size:15px;color:var(--color-text-secondary);pointer-events:none">Move cursor here</span></div>`;
+    const area=document.getElementById('ta'),trails=[];
+    const colors=['rgba(129,140,248,.7)','rgba(125,211,252,.7)','rgba(196,181,253,.7)','rgba(167,243,208,.7)'];
+    area.addEventListener('mousemove',e=>{
+      const r=area.getBoundingClientRect(),dot=document.createElement('div');
+      dot.className='trail-dot';
+      const sz=8+Math.random()*6;
+      dot.style.cssText=`width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:${e.clientX-r.left}px;top:${e.clientY-r.top}px;transition:opacity .6s,transform .6s`;
+      area.appendChild(dot);
+      setTimeout(()=>{dot.style.opacity='0';dot.style.transform='translate(-50%,-50%) scale(0)';},10);
+      setTimeout(()=>{if(dot.parentNode)dot.parentNode.removeChild(dot);},650);
+    });
+  }},
+  {name:'Typewriter',desc:'Roles cycle with typewriter effect + blinking cursor — pure CSS + JS',render(){
+    const roles=['Frontend Developer.','UI/UX Enthusiast.','Open Source Builder.','Creative Coder.'];
+    document.getElementById('demo').innerHTML=`<div class="nbadge">hero headline · role switcher</div><div class="typewriter-wrap"><span class="tw-static">I'm a </span><span class="tw-dynamic" id="tw"></span></div>`;
+    let ri=0,ci=0,del=false;
+    const tw=document.getElementById('tw');
+    function tick(){
+      const word=roles[ri];
+      if(!del){tw.textContent=word.slice(0,++ci);if(ci===word.length){del=true;setTimeout(tick,1200);return;}}
+      else{tw.textContent=word.slice(0,--ci);if(ci===0){del=false;ri=(ri+1)%roles.length;}}
+      setTimeout(tick,del?55:90);
+    }
+    tick();
+  }},
+  {name:'Stagger grid',desc:'Click Replay — cards enter in wave pattern (row × col delay)',render(){
+    const labels=['Design','React','Node','CSS','Git','APIs','Figma','TypeScript','Next.js'];
+    document.getElementById('demo').innerHTML=`<div class="nbadge">skills grid · tech stack</div><div class="sg-grid" id="sg">${labels.map(l=>`<div class="sg-cell">${l}</div>`).join('')}</div><button onclick="doGrid()" style="margin-top:14px;font-size:12px;padding:5px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans)">↺ Replay</button>`;
+    setTimeout(doGrid,150);
+  }},
+  {name:'Underline draw',desc:'Hover links — underline draws left-to-right via width transition',render(){
+    const links=['Projects','About me','Blog posts','Get in touch'];
+    document.getElementById('demo').innerHTML=`<div class="nbadge">nav links · inline CTAs</div><div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start">${links.map(l=>`<span class="link-draw">${l}</span>`).join('')}</div>`;
+  }},
+  {name:'Glass card',desc:'Glassmorphism card — backdrop-blur + translucent border + subtle bg',render(){
+    document.getElementById('demo').innerHTML=`<div class="nbadge">featured · hero overlay · modals</div><div class="glass-wrap"><div class="glass-card"><h3>Open to work</h3><p style="margin-top:6px">Full-stack · remote · EU timezone</p><div style="margin-top:12px;display:flex;gap:6px"><span style="font-size:11px;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.15);border:0.5px solid rgba(255,255,255,.2);color:var(--color-text-primary)">React</span><span style="font-size:11px;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.15);border:0.5px solid rgba(255,255,255,.2);color:var(--color-text-primary)">Next.js</span><span style="font-size:11px;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.15);border:0.5px solid rgba(255,255,255,.2);color:var(--color-text-primary)">TypeScript</span></div></div></div>`;
+  }}
+];
+
+function doReveal(){document.querySelectorAll('.reveal-item').forEach(el=>el.classList.remove('visible'));document.querySelectorAll('.reveal-item').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),80+i*120));}
+function doCount(){[[1,5,'c1'],[2,47,'c2'],[3,28,'c3']].forEach(([v,target,id])=>{const el=document.getElementById(id);let cur=0;const step=Math.ceil(target/40);const t=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=cur;if(cur>=target)clearInterval(t);},30);});}
+function doWords(){document.querySelectorAll('.wr-word').forEach(el=>el.classList.remove('show'));document.querySelectorAll('.wr-word').forEach((el,i)=>setTimeout(()=>el.classList.add('show'),60+i*90));}
+function doGrid(){document.querySelectorAll('.sg-cell').forEach(el=>el.classList.remove('in'));document.querySelectorAll('.sg-cell').forEach((el,i)=>{const row=Math.floor(i/3),col=i%3;setTimeout(()=>el.classList.add('in'),(row+col)*80+50);});}
+
+let current=null;
+const allDemos=[...original,...newEffects];
+
+function showDemo(idx){
+  current=idx;
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===idx));
+  document.getElementById('desc').textContent=allDemos[idx].desc;
+  document.getElementById('demo').innerHTML='';
+  allDemos[idx].render();
+}
+
+const tabsA=document.getElementById('tabs-a'),tabsB=document.getElementById('tabs-b');
+original.forEach((_,i)=>{const b=document.createElement('button');b.className='tab';b.dataset.i=i;b.textContent=original[i].name;tabsA.appendChild(b);});
+newEffects.forEach((_,i)=>{const b=document.createElement('button');b.className='tab new-tag';b.dataset.i=original.length+i;b.textContent=newEffects[i].name;tabsB.appendChild(b);});
+
+[tabsA,tabsB].forEach(row=>row.addEventListener('click',e=>{const t=e.target.closest('[data-i]');if(t)showDemo(+t.dataset.i);}));
+
+showDemo(0);
+</script>

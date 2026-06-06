@@ -1,0 +1,83 @@
+Refresh token rotation is the practice of issuing a new refresh token every time the old one is used. The used token is immediately invalidated. If an attacker steals a refresh token and tries to use it after the legitimate client already has, the server detects the reuse and can revoke the entire token family.
+
+Simple in theory. Surprisingly sharp edges in practice.
+
+## The basic flow
+
+```
+1. User logs in → server issues access token (15min) + refresh token (30 days)
+2. Access token expires → client POSTs refresh token to /auth/refresh
+3. Server validates refresh token → issues new access token + new refresh token
+4. Old refresh token is marked used (invalidated)
+5. If the old token is ever presented again → reuse detected → revoke everything
+```
+
+The key insight: the refresh token is a single-use credential. Use it once, get a new one. Try to use it again and you've either been compromised or you have a concurrency bug.
+
+## The concurrency problem
+
+Here's the edge case that bites every implementation: what happens when two requests hit `/auth/refresh` with the same refresh token at the same time?
+
+This happens more than you think — mobile apps on flaky networks retry requests, SPAs open multiple tabs, background workers refresh independently. Two simultaneous refresh requests, both carrying the valid token.
+
+Request A arrives first, validates the token, issues a new pair, marks the old token used. Request B arrives 10ms later, finds the token already used, detects "reuse" — and if your implementation is aggressive, it revokes the entire session. The legitimate user is logged out.
+
+The fix: use a database transaction with a pessimistic lock on the refresh token row.
+
+```csharp
+await using var tx = await _db.Database.BeginTransactionAsync(
+    IsolationLevel.RepeatableRead);
+
+var token = await _db.RefreshTokens
+    .FromSqlRaw("SELECT * FROM refresh_tokens WHERE token = {0} FOR UPDATE", tokenValue)
+    .FirstOrDefaultAsync();
+
+if (token is null || token.Used || token.ExpiresAt < DateTime.UtcNow)
+    return Unauthorized();
+
+token.Used = true;
+// issue new pair, save, commit
+await tx.CommitAsync();
+```
+
+`FOR UPDATE` locks the row. The second concurrent request blocks until the first commits, then sees `Used = true` and returns a 401 — without triggering a family revocation, because it's not reuse by an attacker, it's a duplicate from the same client.
+
+## Redis for session state
+
+Storing refresh tokens in PostgreSQL works, but every token validation is a database read. For high-traffic APIs this adds latency on every request after the access token expires.
+
+The pattern I use: store the token hash in Redis with the session ID as value, set TTL to the token expiry. Validation is a Redis `GET` — sub-millisecond, no database hit.
+
+```csharp
+var sessionId = await _redis.StringGetAsync($"rt:{tokenHash}");
+if (sessionId.IsNull) return Unauthorized();
+```
+
+On rotation, delete the old key and set a new one atomically using a Redis transaction (`MULTI/EXEC`) or a Lua script.
+
+## Token families
+
+To detect reuse even after the immediately-used token TTL expires, group tokens into families. Every login starts a new family. Every rotation keeps the same `family_id`. If reuse is detected, revoke all tokens with that family ID.
+
+```csharp
+public class RefreshToken
+{
+    public Guid Id { get; set; }
+    public Guid FamilyId { get; set; }
+    public string TokenHash { get; set; }
+    public bool Used { get; set; }
+    public DateTime ExpiresAt { get; set; }
+}
+```
+
+On reuse: `DELETE FROM refresh_tokens WHERE family_id = @familyId`. One query, entire session tree gone.
+
+## What I ship by default
+
+- 15-minute access tokens (short enough to limit exposure, long enough not to thrash the refresh endpoint)
+- 30-day refresh tokens with rotation
+- Redis primary store, PostgreSQL as durable audit log
+- Family-based revocation
+- Pessimistic lock on concurrent refresh to avoid false positives
+
+The auth service is the one place where getting it wrong has user-visible and security consequences simultaneously. Worth the extra complexity.

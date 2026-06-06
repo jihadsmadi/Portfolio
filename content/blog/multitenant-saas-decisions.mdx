@@ -1,0 +1,60 @@
+Before you write your first migration, before you pick your ORM, before you even name your project — there are seven architectural decisions in a multi-tenant SaaS that will define everything that comes after. Get them right and the system grows cleanly. Get them wrong and you'll be refactoring tenant boundaries three years in while users wait.
+
+These aren't exciting decisions. They're boring. That's the point.
+
+## 1. Tenant isolation model
+
+The single biggest decision. Your three options:
+
+- **Shared database, shared schema** — all tenants in the same tables, every row has a `tenant_id`. Cheapest to run. Hardest to get right. One missing `WHERE tenant_id = @t` and you have a data leak.
+- **Shared database, separate schemas** — one database, one schema per tenant. Middle ground. Migrations are more complex.
+- **Separate database per tenant** — maximum isolation. Expensive. Hard to query across tenants. Right for regulated industries.
+
+I use shared database, shared schema with row-level security enforced at the database level (PostgreSQL RLS). The application layer is a second enforcement point, never the first.
+
+## 2. Tenant resolution
+
+How does your app know which tenant is handling this request? Common strategies:
+
+- **Subdomain**: `acme.yourapp.com` → tenant `acme`
+- **Custom domain**: `app.acme.com` → resolve via DNS CNAME
+- **Header**: `X-Tenant-ID` for API-only products
+- **JWT claim**: tenant embedded in the token
+
+I put the resolved `TenantId` into a scoped service (`ITenantContext`) at the start of every request. Every repository reads from it. It never travels as a parameter.
+
+## 3. Authentication scope
+
+Does a user belong to a tenant, or can one user exist in multiple tenants? This affects your `users` table design fundamentally.
+
+If users are tenant-scoped: `users` has a `tenant_id`. Simple. Users can't cross tenants.
+
+If users are global: you need a `tenant_memberships` join table. Users log in once and switch context. More flexible, more complex.
+
+## 4. Plan and billing model
+
+Where does your pricing logic live? Options:
+
+- **Per-seat** — count active users per tenant
+- **Per-resource** — count API calls, storage, projects
+- **Flat rate per plan** — feature flags by plan tier
+
+Define this before your schema. If you bill per seat, `tenant_memberships` needs an `active` boolean and a count query on every signup. If you bill per resource, you need usage events from day one.
+
+## 5. Data migration strategy
+
+When you deploy a schema change, do you migrate all tenants at once or tenant by tenant? For shared-schema setups, a migration runs once and affects everyone — which is usually fine. For separate schemas, you need a migration runner that iterates over all tenant schemas.
+
+Plan for this before you have 100 tenants.
+
+## 6. Cross-tenant operations
+
+Can your team query across all tenants for support, analytics, or debugging? If you use RLS, you need a bypass role. If you use separate schemas, you need a reporting database. Neither is free — decide the cost upfront.
+
+## 7. Offboarding
+
+What happens when a tenant cancels? You need a data export path (GDPR in some markets requires it) and a deletion path. Both are much easier to build when the schema is tenant-aware from the start.
+
+---
+
+None of these decisions require a whiteboard session. They require sitting down with a blank document and answering each question before the first `git commit`. The decisions compound. The earlier you make them consciously, the less you'll pay for them later.

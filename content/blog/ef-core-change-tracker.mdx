@@ -1,0 +1,55 @@
+EF Core's change tracker is one of those things that feels like magic until it feels like a monster. You update an entity, save changes, and somehow something else gets persisted that you didn't touch. Or worse — you load a graph of objects, forget to detach them, and watch your API grind to a halt under memory pressure.
+
+I spent two years fighting it before I finally stopped and asked: *what is it actually for?*
+
+## What the change tracker really is
+
+The change tracker is a unit-of-work implementation baked into `DbContext`. Every entity you load through the context gets watched. EF records its original values, tracks any modifications, and when you call `SaveChanges()`, it computes the diff and generates the minimal SQL to persist it.
+
+That sounds helpful. And it is — if your `DbContext` lifetime is short and scoped to a single operation. In an ASP.NET Core app with `AddDbContext<T>()`, you get exactly that: one context per HTTP request, disposed after the response.
+
+The trouble starts when you treat `DbContext` like a long-lived object, or when you mix tracked and untracked entities without knowing it.
+
+## The three mistakes I kept making
+
+**1. Attaching entities from a previous context**
+
+This happens when you deserialize a DTO, map it to an entity class, and hand it to `_context.Update(entity)`. EF has never seen this object before. It doesn't know if the values changed or not. It marks every property as modified and generates a full `UPDATE` statement touching every column — including ones you didn't change.
+
+Fix: load the entity first, apply the changes to the tracked instance, then save.
+
+```csharp
+var existing = await _context.Orders.FindAsync(dto.Id);
+existing.Status = dto.Status;
+existing.UpdatedAt = DateTime.UtcNow;
+await _context.SaveChangesAsync();
+```
+
+**2. Loading more than you need**
+
+When you call `.Include(o => o.Items).Include(o => o.Customer)`, EF tracks every single one of those objects. For a read-only endpoint, that's pure waste — memory for the tracked state, CPU for the diff on save.
+
+Fix: use `.AsNoTracking()` on every query that doesn't need to write.
+
+```csharp
+var order = await _context.Orders
+    .AsNoTracking()
+    .Include(o => o.Items)
+    .FirstOrDefaultAsync(o => o.Id == id);
+```
+
+**3. Calling SaveChanges in a loop**
+
+Batch operations where `SaveChanges` is inside a `foreach` are the death of performance. Every call is a round-trip to the database, and the change tracker is re-evaluated each time.
+
+Fix: accumulate all changes, then save once. Or use `ExecuteUpdateAsync`/`ExecuteDeleteAsync` (EF Core 7+) for bulk operations that bypass the change tracker entirely.
+
+## What changed for me
+
+Once I understood the change tracker as a *unit-of-work boundary*, everything clicked. I stopped trying to work around it and started designing around it:
+
+- Read-heavy endpoints always use `.AsNoTracking()`
+- Write operations load → modify → save in one tight scope
+- Bulk updates use raw SQL or the new `ExecuteUpdate` API
+
+The change tracker isn't the problem. Treating `DbContext` as a shared, long-lived object is.
