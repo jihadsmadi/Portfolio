@@ -2,11 +2,8 @@
 
 import Link from 'next/link'
 import type { BlogPostWithMeta } from '@/lib/types'
-
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import { formatDate } from '@/lib/format'
+import ArrowRight from '@/components/icons/ArrowRight'
 
 export default function BlogPostRow({ post }: { post: BlogPostWithMeta }) {
   return (
@@ -108,9 +105,7 @@ export default function BlogPostRow({ post }: { post: BlogPostWithMeta }) {
           flexShrink: 0,
         }}
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-          <path d="M5 12h14M13 5l7 7-7 7" />
-        </svg>
+        <ArrowRight size={15} />
       </div>
     </Link>
   )

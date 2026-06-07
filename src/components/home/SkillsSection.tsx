@@ -1,10 +1,11 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import type { Skill, SkillCategory } from '@/lib/types'
-
-const EASE = [0.23, 1, 0.32, 1] as const
+import SectionLabel from '@/components/ui/SectionLabel'
+import SectionShell from '@/components/ui/SectionShell'
+import { EASE, DURATION } from '@/components/motion/constants'
+import { useSectionInView } from '@/components/motion/useSectionInView'
 
 type Props = { skills: Skill[] }
 
@@ -20,36 +21,6 @@ function levelToPercent(skill: Skill): number {
   return skill.proficiency
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 10,
-        fontFamily: 'var(--font-body)',
-        fontWeight: 600,
-        fontSize: 13,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase' as const,
-        color: 'var(--primary)',
-        marginBottom: 16,
-      }}
-    >
-      <span
-        style={{
-          width: 24,
-          height: 2,
-          background: 'var(--primary)',
-          borderRadius: 'var(--radius-full)',
-          flexShrink: 0,
-        }}
-      />
-      {children}
-    </div>
-  )
-}
-
 function SkillCard({ skill, delay, visible }: { skill: Skill; delay: number; visible: boolean }) {
   const pct = levelToPercent(skill)
   const circumference = 2 * Math.PI * 16
@@ -57,6 +28,7 @@ function SkillCard({ skill, delay, visible }: { skill: Skill; delay: number; vis
 
   return (
     <motion.div
+      className="skill-card"
       initial={{ opacity: 0, y: 16, scale: 0.96 }}
       animate={visible ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.45, ease: EASE, delay: delay / 1000 }}
@@ -146,8 +118,7 @@ function SkillCard({ skill, delay, visible }: { skill: Skill; delay: number; vis
 }
 
 export default function SkillsSection({ skills }: Props) {
-  const sectionRef = useRef<HTMLElement>(null)
-  const visible = useInView(sectionRef, { once: true, margin: '-80px' })
+  const { ref: sectionRef, inView: visible } = useSectionInView()
 
   const grouped = TABS.reduce<Record<SkillCategory, Skill[]>>(
     (acc, cat) => {
@@ -158,18 +129,15 @@ export default function SkillsSection({ skills }: Props) {
   )
 
   return (
-    <section
+    <SectionShell
       ref={sectionRef}
-      style={{
-        maxWidth: 'var(--width-max)',
-        margin: '0 auto',
-        padding: '0 32px 120px',
-      }}
+      className="skills-section"
+      padding="inset"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={visible ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.5, ease: EASE }}
+        transition={{ duration: DURATION.fast, ease: EASE }}
       >
         <SectionLabel>Skill matrix</SectionLabel>
       </motion.div>
@@ -177,28 +145,13 @@ export default function SkillsSection({ skills }: Props) {
       <motion.h2
         initial={{ opacity: 0, y: 24 }}
         animate={visible ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6, ease: EASE, delay: 0.07 }}
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: 'clamp(28px, 3vw, 40px)',
-          lineHeight: 1.1,
-          letterSpacing: '-0.025em',
-          margin: '0 0 56px',
-          color: 'var(--on-surface)',
-        }}
+        transition={{ duration: DURATION.normal, ease: EASE, delay: 0.07 }}
+        className="skills-headline headline-section"
       >
         Where I can contribute most
       </motion.h2>
 
-      <div
-        className="skills-cols"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 24,
-        }}
-      >
+      <div className="skills-cols">
         {TABS.map((cat, colIdx) => {
           const catSkills = grouped[cat]
           const panelDelayMs = colIdx * 60
@@ -206,6 +159,7 @@ export default function SkillsSection({ skills }: Props) {
           return (
             <motion.div
               key={cat}
+              className="skills-panel"
               initial={{ opacity: 0, y: 20 }}
               animate={visible ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, ease: EASE, delay: panelDelayMs / 1000 + 0.1 }}
@@ -255,12 +209,11 @@ export default function SkillsSection({ skills }: Props) {
                 className="skills-scroll"
                 style={{
                   overflowY: 'auto',
-                  maxHeight: 300,
                   paddingBottom: 36,
                   paddingRight: 2,
                 }}
               >
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                <div className="skills-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
                   {catSkills.map((skill, idx) => {
                     const row = Math.floor(idx / 2)
                     const col = idx % 2
@@ -273,6 +226,7 @@ export default function SkillsSection({ skills }: Props) {
               </div>
 
               <div
+                className="skills-panel-fade"
                 style={{
                   position: 'absolute',
                   bottom: 0,
@@ -288,27 +242,6 @@ export default function SkillsSection({ skills }: Props) {
           )
         })}
       </div>
-      <style>{`
-        @media (max-width: 767px) {
-          .skills-cols { grid-template-columns: 1fr !important; }
-        }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .skills-cols { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        .skills-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
-          scroll-behavior: smooth;
-        }
-        .skills-scroll::-webkit-scrollbar { width: 3px; }
-        .skills-scroll::-webkit-scrollbar-track { background: transparent; }
-        .skills-scroll::-webkit-scrollbar-thumb {
-          background: color-mix(in oklab, var(--primary) 35%, transparent);
-          border-radius: 99px;
-          transition: background 0.2s;
-        }
-        .skills-scroll::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-      `}</style>
-    </section>
+    </SectionShell>
   )
 }

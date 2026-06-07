@@ -1,10 +1,11 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion } from 'framer-motion'
 import type { TechStack } from '@/lib/types'
+import SectionLabel from '@/components/ui/SectionLabel'
+import { EASE, VIEWPORT_MARGIN_LOOSE } from '@/components/motion/constants'
+import { useSectionInView } from '@/components/motion/useSectionInView'
 
-const EASE = [0.23, 1, 0.32, 1] as const
 const CAT_ORDER = ['language', 'framework', 'database', 'cloud', 'tool', 'platform']
 const CAT_LABELS: Record<string, string> = {
   language: 'Languages',
@@ -17,18 +18,8 @@ const CAT_LABELS: Record<string, string> = {
 
 type Props = { stack: TechStack[] }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: 'var(--primary)', marginBottom: 16 }}>
-      <span style={{ width: 24, height: 2, background: 'var(--primary)', borderRadius: 'var(--radius-full)', flexShrink: 0 }} />
-      {children}
-    </div>
-  )
-}
-
 export default function TechStackSection({ stack }: Props) {
-  const ref = useRef<HTMLElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
+  const { ref, inView } = useSectionInView(VIEWPORT_MARGIN_LOOSE)
 
   if (stack.length === 0) return null
 

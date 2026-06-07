@@ -2,35 +2,10 @@
 
 import Link from 'next/link'
 import type { BlogPostWithMeta } from '@/lib/types'
+import SectionLabel from '@/components/ui/SectionLabel'
+import { formatDate } from '@/lib/format'
 
 type Props = { posts: BlogPostWithMeta[] }
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 10,
-        fontFamily: 'var(--font-body)',
-        fontWeight: 600,
-        fontSize: 13,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase' as const,
-        color: 'var(--primary)',
-        marginBottom: 16,
-      }}
-    >
-      <span style={{ width: 24, height: 2, background: 'var(--primary)', borderRadius: 'var(--radius-full)', flexShrink: 0 }} />
-      {children}
-    </div>
-  )
-}
-
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
 
 export default function LatestBlog({ posts }: Props) {
   if (posts.length === 0) return null

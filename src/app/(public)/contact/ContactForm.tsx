@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import type { SocialLink } from '@/lib/types'
+import SectionShell from '@/components/ui/SectionShell'
+import PageHeader from '@/components/ui/PageHeader'
+import GradientText from '@/components/ui/GradientText'
 
 type Status = 'idle' | 'sending' | 'success' | 'error'
 
@@ -58,19 +61,14 @@ export default function ContactForm({ socialLinks }: { socialLinks: SocialLink[]
   }
 
   return (
-    <div style={{ maxWidth: 'var(--width-max)', margin: '0 auto', padding: '80px 32px 120px' }}>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 16 }}>
-        <span style={{ width: 24, height: 2, background: 'var(--primary)', borderRadius: 'var(--radius-full)' }} />
-        Get in touch
-      </div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'clamp(36px, 4vw, 60px)', lineHeight: 1.05, letterSpacing: '-0.03em', margin: '0 0 16px', color: 'var(--on-surface)' }}>
-        Let&apos;s build something{' '}
-        <span style={{ background: 'linear-gradient(135deg, var(--primary), var(--tint))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>solid.</span>
-      </h1>
-      <p style={{ fontSize: 18, lineHeight: 1.65, color: 'var(--on-surface-variant)', maxWidth: '56ch', margin: '0 0 72px' }}>
-        Whether it&apos;s a multi-tenant rebuild, a real-time feature, or an architecture review — I&apos;d love to hear about it.
-      </p>
-      <div className="contact-grid" style={{ display: 'grid', gridTemplateColumns: '5fr 7fr', gap: 80, alignItems: 'start' }}>
+    <SectionShell as="div" padding="page">
+      <PageHeader
+        label="Get in touch"
+        title={<>Let&apos;s build something <GradientText>solid.</GradientText></>}
+        lead="Whether it's a multi-tenant rebuild, a real-time feature, or an architecture review — I'd love to hear about it."
+        leadClassName="page-lead--spacious"
+      />
+      <div className="contact-grid">
         <div>
           <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 28, letterSpacing: '-0.02em', lineHeight: 1.2, margin: '0 0 12px', color: 'var(--on-surface)' }}>
             Tell me about{' '}
@@ -116,11 +114,6 @@ export default function ContactForm({ socialLinks }: { socialLinks: SocialLink[]
           )}
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 767px) {
-          .contact-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
-        }
-      `}</style>
-    </div>
+    </SectionShell>
   )
 }

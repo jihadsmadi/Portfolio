@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Space_Grotesk, Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
@@ -51,14 +52,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       data-scroll-behavior="smooth"
       className={`${spaceGrotesk.variable} ${inter.variable}`}
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var r=localStorage.getItem('theme');var t=r?JSON.parse(r):null;if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)}catch(e){}`,
-          }}
-        />
-      </head>
       <body>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`try{var r=localStorage.getItem('theme');var t=r?JSON.parse(r):null;if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t)}catch(e){}`}
+        </Script>
         <ThemeProvider>
           {children}
         </ThemeProvider>

@@ -12,7 +12,7 @@ import { Actions } from '@/components/admin/ActionBtns'
 import type { Skill, SkillCategory } from '@/lib/types'
 
 type Draft = Omit<Skill, 'id' | 'created_at'>
-const BLANK: Draft = { name: '', category: 'frontend', level: 80, proficiency: null, description: '', icon_name: '', order: 0 }
+const BLANK: Draft = { name: '', category: 'frontend', proficiency: 80, description: '', icon_name: '', order: 0 }
 const td: React.CSSProperties = { padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: 13.5, color: 'var(--on-surface)' }
 
 export default function AdminSkillsPage() {
@@ -27,11 +27,11 @@ export default function AdminSkillsPage() {
   async function load() { const { data } = await supabase.from('skills').select('*').order('category').order('order'); setRows(data ?? []); setLoading(false) }
   useEffect(() => { load() }, [])
 
-  function openEdit(row: Skill) { setDraft({ name: row.name, category: row.category, level: row.level, proficiency: row.proficiency, description: row.description ?? '', icon_name: row.icon_name ?? '', order: row.order }); setModal(row) }
+  function openEdit(row: Skill) { setDraft({ name: row.name, category: row.category, proficiency: row.proficiency, description: row.description ?? '', icon_name: row.icon_name ?? '', order: row.order }); setModal(row) }
 
   async function save() {
     setSaving(true)
-    const payload = { ...draft, level: Number(draft.level), order: Number(draft.order), proficiency: draft.proficiency ? Number(draft.proficiency) : null }
+    const payload = { ...draft, proficiency: Number(draft.proficiency), order: Number(draft.order) }
     const { error } = modal === 'add'
       ? await adminMutate({ table: 'skills', operation: 'insert', payload: payload as Record<string, unknown> })
       : await adminMutate({ table: 'skills', operation: 'update', payload: payload as Record<string, unknown>, id: (modal as Skill).id })
@@ -71,7 +71,7 @@ export default function AdminSkillsPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--surface-container)' }}>
-                {['Name', 'Category', 'Level', 'Icon', 'Order', ''].map(h => <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--on-surface-variant)', whiteSpace: 'nowrap' }}>{h}</th>)}
+                {['Name', 'Category', 'Proficiency', 'Icon', 'Order', ''].map(h => <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--on-surface-variant)', whiteSpace: 'nowrap' }}>{h}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -82,9 +82,9 @@ export default function AdminSkillsPage() {
                   <td style={td}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 80, height: 4, background: 'var(--surface-container)', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${row.level}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary), var(--tint))' }} />
+                        <div style={{ width: `${row.proficiency}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary), var(--tint))' }} />
                       </div>
-                      <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{row.level}%</span>
+                      <span style={{ fontSize: 12, color: 'var(--on-surface-variant)' }}>{row.proficiency}%</span>
                     </div>
                   </td>
                   <td style={{ ...td, fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--on-surface-variant)' }}>{row.icon_name ?? '—'}</td>
@@ -101,7 +101,7 @@ export default function AdminSkillsPage() {
         <Modal title={modal === 'add' ? 'Add skill' : 'Edit skill'} onClose={() => setModal(null)} onSave={save} saving={saving}>
           <AdminField label="Name" id="name" value={draft.name} onChange={v => set('name', v)} required />
           <AdminField label="Category" id="category" value={draft.category} onChange={v => set('category', v as SkillCategory)} options={[{ value: 'frontend', label: 'Frontend' }, { value: 'backend', label: 'Backend' }, { value: 'tools', label: 'Tools' }]} />
-          <AdminField label="Level (0–100)" id="level" type="number" value={String(draft.level)} onChange={v => set('level', Number(v))} />
+          <AdminField label="Proficiency (0–100)" id="proficiency" type="number" value={String(draft.proficiency)} onChange={v => set('proficiency', Number(v))} />
           <AdminField label="Icon name (simple-icons slug)" id="icon_name" value={draft.icon_name ?? ''} onChange={v => set('icon_name', v)} placeholder="dotnet" />
           <AdminField label="Order" id="order" type="number" value={String(draft.order)} onChange={v => set('order', Number(v))} />
           <AdminField label="Description" id="description" value={draft.description ?? ''} onChange={v => set('description', v)} multiline rows={3} />

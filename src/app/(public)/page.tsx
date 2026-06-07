@@ -20,7 +20,6 @@ export default async function HomePage() {
     getFeaturedProjects(),
   ])
 
-  console.log("Personal Info: ",personal)
   return (
     <>
       <HeroSection personal={personal} socialLinks={socialLinks} />

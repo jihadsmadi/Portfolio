@@ -1,14 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-
-const EASE = [0.23, 1, 0.32, 1] as const
+import { EASE, DURATION } from './constants'
 
 const containerVariants = {
   hidden: {},
-  show: {
-    transition: { staggerChildren: 0.09 },
-  },
+  show: { transition: { staggerChildren: 0.09 } },
 }
 
 const itemVariants = {
@@ -16,7 +13,7 @@ const itemVariants = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: EASE },
+    transition: { duration: DURATION.normal, ease: EASE },
   },
 }
 
@@ -33,7 +30,7 @@ export function ScrollReveal({ children, className, style, margin = '-60px' }: C
       variants={containerVariants}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, margin }}
+      viewport={{ once: true, margin: margin as `${number}px` }}
       className={className}
       style={style}
     >
@@ -53,13 +50,40 @@ export function RevealItem({ children, className, style, delay = 0 }: ItemProps)
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 22 },
+        hidden: itemVariants.hidden,
         show: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.55, ease: EASE, delay },
+          ...itemVariants.show,
+          transition: { duration: DURATION.normal, ease: EASE, delay },
         },
       }}
+      className={className}
+      style={style}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+export function RevealBlock({
+  children,
+  inView,
+  delay = 0,
+  y = 20,
+  className,
+  style,
+}: {
+  children: React.ReactNode
+  inView: boolean
+  delay?: number
+  y?: number
+  className?: string
+  style?: React.CSSProperties
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: DURATION.normal, ease: EASE, delay }}
       className={className}
       style={style}
     >
