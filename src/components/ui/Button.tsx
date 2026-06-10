@@ -10,14 +10,14 @@ type BaseProps = {
 
 type LinkProps = BaseProps & {
   href: string
-  onClick?: () => void
+  onClick?: React.MouseEventHandler
   type?: never
   disabled?: never
 }
 
 type ButtonProps = BaseProps & {
   href?: never
-  onClick?: () => void
+  onClick?: React.MouseEventHandler
   type?: 'button' | 'submit'
   disabled?: boolean
 }
